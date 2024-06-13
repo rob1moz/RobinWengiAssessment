@@ -1,0 +1,222 @@
+<html>
+<head>
+<title>main.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+main.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">import </span><span class="s1">seaborn </span><span class="s0">as </span><span class="s1">sns</span>
+
+
+<span class="s0">class </span><span class="s1">MonteCarlo:</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">inputs):</span>
+        <span class="s2"># Define the value of the seed</span>
+        <span class="s1">np.random.seed(inputs[</span><span class="s3">'random_seed_value'</span><span class="s1">])</span>
+        <span class="s2"># Define the frequency random vector of the size of the number of simulated periods</span>
+        <span class="s1">self.frequency_vector = self.get_random_vector(inputs[</span><span class="s3">'frequency_distribution'</span><span class="s1">]</span><span class="s0">,</span>
+                                                       <span class="s1">inputs[</span><span class="s3">'frequency_parameter'</span><span class="s1">]</span><span class="s0">,</span>
+                                                       <span class="s1">inputs[</span><span class="s3">'number_of_simulation'</span><span class="s1">])</span>
+        <span class="s2"># Define the severity random vector of the size of the total frequency</span>
+        <span class="s1">self.severity_vector = self.get_random_vector(inputs[</span><span class="s3">'severity_distribution'</span><span class="s1">]</span><span class="s0">,</span>
+                                                      <span class="s1">inputs[</span><span class="s3">'severity_parameter'</span><span class="s1">]</span><span class="s0">,</span>
+                                                      <span class="s1">np.sum(self.frequency_vector))</span>
+
+    <span class="s0">def </span><span class="s1">get_random_vector(self</span><span class="s0">, </span><span class="s1">a_distribution</span><span class="s0">, </span><span class="s1">a_parameter_set</span><span class="s0">, </span><span class="s1">a_number_of_simulation):</span>
+        <span class="s2"># Generate a random vector from a distribution given by a string.</span>
+        <span class="s0">if </span><span class="s1">a_distribution == </span><span class="s3">'poisson'</span><span class="s1">:</span>
+            <span class="s1">random_vector = np.random.poisson(a_parameter_set[</span><span class="s3">'lambda'</span><span class="s1">]</span><span class="s0">, </span><span class="s1">a_number_of_simulation)</span>
+        <span class="s0">elif </span><span class="s1">a_distribution == </span><span class="s3">'pareto'</span><span class="s1">:</span>
+            <span class="s1">random_vector = (np.random.pareto(a_parameter_set[</span><span class="s3">'alpha'</span><span class="s1">]</span><span class="s0">, </span><span class="s1">a_number_of_simulation) + </span><span class="s4">1</span><span class="s1">) * \</span>
+                            <span class="s1">a_parameter_set[</span><span class="s3">'theta'</span><span class="s1">]</span>
+        <span class="s0">else</span><span class="s1">:</span>
+            <span class="s1">print(</span><span class="s3">'The selected distribution in not yet implemented'</span><span class="s1">)</span>
+        <span class="s0">return </span><span class="s1">random_vector</span>
+    
+    <span class="s0">def </span><span class="s1">plot_frequency(self):</span>
+        <span class="s2"># Plot the Frequency random vector</span>
+        <span class="s0">return </span><span class="s1">sns.displot(self.frequency_vector</span><span class="s0">, </span><span class="s1">bins=</span><span class="s4">5</span><span class="s0">, </span><span class="s1">kde=</span><span class="s0">True,</span><span class="s1">kde_kws={</span><span class="s3">&quot;bw_adjust&quot;</span><span class="s1">: </span><span class="s4">5</span><span class="s1">})</span>
+    
+    <span class="s0">def </span><span class="s1">plot_severity(self):</span>
+        <span class="s2"># Plot the severity random vector</span>
+        <span class="s0">return </span><span class="s1">sns.displot(self.severity_vector</span><span class="s0">, </span><span class="s1">bins=</span><span class="s4">100</span><span class="s0">, </span><span class="s1">kde=</span><span class="s0">True,</span><span class="s1">kde_kws={</span><span class="s3">&quot;bw_adjust&quot;</span><span class="s1">: </span><span class="s4">0.5</span><span class="s1">}</span><span class="s0">,</span><span class="s1">log_scale=</span><span class="s0">True</span><span class="s1">)</span>
+
+
+<span class="s0">class </span><span class="s1">XlContract:</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">inputs):</span>
+        <span class="s2"># Store the inputs in an attribute</span>
+        <span class="s1">self.inputs = inputs</span>
+        <span class="s2"># Instantiate the monte carlo simulation</span>
+        <span class="s1">self.monte_carlo = MonteCarlo(self.inputs)</span>
+        <span class="s2"># 1. loss vector for USD 10m xs USD 5m</span>
+        <span class="s1">self.xs_loss = self.get_xs_loss_vector()</span>
+        <span class="s2"># 2. loss vector for 10m xs 5m, AAD 2m</span>
+        <span class="s1">self.aad_loss = self.get_loss_vector_with_aad_and_aal(self.xs_loss</span><span class="s0">, </span><span class="s1">self.inputs[</span><span class="s3">'AAD'</span><span class="s1">]</span><span class="s0">, </span><span class="s1">np.inf)</span>
+        <span class="s2"># 3. loss vector for 10m xs 5m, AAL 12m</span>
+        <span class="s1">self.aal_loss = self.get_loss_vector_with_aad_and_aal(self.xs_loss</span><span class="s0">,</span><span class="s4">0</span><span class="s0">, </span><span class="s1">self.inputs[</span><span class="s3">'AAL'</span><span class="s1">])</span>
+        <span class="s2"># 4. loss vector for 10m xs 5m, AAD 2m, AAL 12m</span>
+        <span class="s1">self.aad_aal_loss = self.get_loss_vector_with_aad_and_aal(self.xs_loss</span><span class="s0">,</span><span class="s1">self.inputs[</span><span class="s3">'AAD'</span><span class="s1">]</span><span class="s0">,</span><span class="s1">self.inputs[</span><span class="s3">'AAL'</span><span class="s1">])</span>
+        <span class="s2"># Create a DataFrame with all relevant result for each contract from 1. to 4.</span>
+        <span class="s1">self.summary = self.get_result_summary()</span>
+
+    <span class="s0">def </span><span class="s1">get_xs_loss_vector(self):</span>
+        <span class="s2"># Define the cumulative claim pattern from the primary insurer</span>
+        <span class="s1">primary_pattern = np.ones((</span><span class="s4">1</span><span class="s0">,</span><span class="s1">len(self.inputs[</span><span class="s3">'claim_pattern'</span><span class="s1">]))) * self.inputs[</span><span class="s3">'claim_pattern'</span><span class="s1">]</span>
+        <span class="s2"># Define the cumulative individual claim according to the claim pattern</span>
+        <span class="s1">cumulative_individual_claim = self.monte_carlo.severity_vector[...</span><span class="s0">, </span><span class="s1">np.newaxis] * np.cumsum(primary_pattern)</span>
+
+        <span class="s2"># Apply the limit and deductible to individual claims and get a vector of severity under xs conditions</span>
+        <span class="s1">individual_claims_with_xs = np.maximum(np.minimum(</span>
+            <span class="s1">self.inputs[</span><span class="s3">'limit'</span><span class="s1">]</span><span class="s0">, </span><span class="s1">cumulative_individual_claim - self.inputs[</span><span class="s3">'deductible'</span><span class="s1">])</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">individual_claims_with_xs[...</span><span class="s0">, </span><span class="s4">1</span><span class="s1">:] = np.diff(individual_claims_with_xs)</span>
+
+        <span class="s2"># Allocate the individual_claims_with_xs to the simulated periods according to the frequency of each period</span>
+        <span class="s1">xs_loss = np.zeros((self.inputs[</span><span class="s3">'number_of_simulation'</span><span class="s1">]</span><span class="s0">, </span><span class="s1">individual_claims_with_xs.shape[</span><span class="s4">1</span><span class="s1">]))</span>
+        <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(individual_claims_with_xs.shape[</span><span class="s4">1</span><span class="s1">]):</span>
+            <span class="s1">xs_loss[...</span><span class="s0">, </span><span class="s1">i] = self.allocate_claim_to_simulation_period(individual_claims_with_xs[...</span><span class="s0">, </span><span class="s1">i])</span>
+        <span class="s0">return </span><span class="s1">xs_loss</span>
+
+    <span class="s0">def </span><span class="s1">get_loss_vector_with_aad_and_aal(self</span><span class="s0">, </span><span class="s1">a_loss_vector</span><span class="s0">, </span><span class="s1">aad</span><span class="s0">, </span><span class="s1">aal):</span>
+        <span class="s2"># Apply the generic formula for AAD and AAL limit on aggregated claims</span>
+        <span class="s1">aad_aal_loss = np.minimum(np.maximum(np.cumsum(a_loss_vector</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">) - aad</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">aal)</span>
+        <span class="s2"># Correct the cumulative for the claim pattern</span>
+        <span class="s1">aad_aal_loss[...</span><span class="s0">, </span><span class="s4">1</span><span class="s1">:] = np.diff(aad_aal_loss)</span>
+        <span class="s0">return </span><span class="s1">aad_aal_loss</span>
+
+    <span class="s0">def </span><span class="s1">allocate_claim_to_simulation_period(self</span><span class="s0">, </span><span class="s1">an_individual_claim_vector):</span>
+        <span class="s2"># We want to aggregate the individual claim according to the frequency</span>
+        <span class="s2"># the goal is to have a claim_vector that match the simulation periods</span>
+        <span class="s1">claim_frequency = self.monte_carlo.frequency_vector</span>
+        <span class="s1">relevant_interval = np.cumsum(claim_frequency)</span>
+        <span class="s2"># Define the aggregated claim vector with same shape as the frequency</span>
+        <span class="s1">claim_vector = np.zeros_like(claim_frequency</span><span class="s0">, </span><span class="s1">dtype=float)</span>
+        <span class="s2"># Sum the correct number of claim for each simulation period taking the claims in sequential order</span>
+        <span class="s1">claim_vector[claim_frequency &gt; </span><span class="s4">0</span><span class="s1">] = [</span>
+            <span class="s1">an_individual_claim_vector[</span>
+            <span class="s1">relevant_interval[i] - claim_frequency[i]:relevant_interval[i]].sum()</span>
+            <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(len(claim_frequency)) </span><span class="s0">if </span><span class="s1">claim_frequency[i] &gt; </span><span class="s4">0</span><span class="s1">]</span>
+        <span class="s0">return </span><span class="s1">claim_vector</span>
+
+    <span class="s0">def </span><span class="s1">VaR(self</span><span class="s0">, </span><span class="s1">a_loss_vector</span><span class="s0">, </span><span class="s1">a_level):</span>
+        <span class="s2"># Value at risk</span>
+        <span class="s0">return </span><span class="s1">np.quantile(a_loss_vector</span><span class="s0">, </span><span class="s1">a_level)</span>
+
+    <span class="s0">def </span><span class="s1">TVaR(self</span><span class="s0">, </span><span class="s1">a_loss_vector</span><span class="s0">, </span><span class="s1">a_level):</span>
+        <span class="s2"># Tail Value at risk</span>
+        <span class="s0">return </span><span class="s1">a_loss_vector[a_loss_vector &gt;= self.VaR(a_loss_vector</span><span class="s0">, </span><span class="s1">a_level)].mean()</span>
+
+    <span class="s0">def </span><span class="s1">premium(self</span><span class="s0">,</span><span class="s1">a_loss_vector</span><span class="s0">, </span><span class="s1">a_level):</span>
+        <span class="s2"># Premium according to pricing model</span>
+        <span class="s1">mean = a_loss_vector.mean()</span>
+        <span class="s1">tvar = self.TVaR(a_loss_vector</span><span class="s0">,</span><span class="s1">a_level)</span>
+        <span class="s1">cost_of_capital = self.inputs[</span><span class="s3">'cost_of_capital'</span><span class="s1">]</span>
+        <span class="s0">return </span><span class="s1">mean + (tvar-mean) * cost_of_capital</span>
+
+    <span class="s0">def </span><span class="s1">reinsurer_pattern(self</span><span class="s0">, </span><span class="s1">a_loss_array):</span>
+        <span class="s2"># Compute the reinsurer payment pattern based on losses</span>
+        <span class="s2"># Format the ouput as a string representation of a list with of 3 digits number inside</span>
+        <span class="s1">pattern_list = list(a_loss_array.sum(axis=</span><span class="s4">0</span><span class="s1">)/a_loss_array.sum())</span>
+        <span class="s1">pattern_list_formatted = [</span><span class="s3">'%.3f' </span><span class="s1">% elem </span><span class="s0">for </span><span class="s1">elem </span><span class="s0">in </span><span class="s1">pattern_list]</span>
+        <span class="s0">return </span><span class="s1">str(pattern_list_formatted)</span>
+
+    <span class="s0">def </span><span class="s1">get_contract_results(self</span><span class="s0">, </span><span class="s1">a_loss_array):</span>
+        <span class="s2"># Compute the result summary for a particular contract kind represented by a_loss_array</span>
+        <span class="s2"># Reduce the dimension of the Pattern first then store the results in a dictionary</span>
+        <span class="s1">a_loss_vector = a_loss_array.sum(axis=</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">contract_result_summary = {</span>
+            <span class="s3">'Average Loss'</span><span class="s1">: a_loss_vector.mean()</span><span class="s0">,</span>
+            <span class="s3">'VaR_99'</span><span class="s1">: self.VaR(a_loss_vector</span><span class="s0">,</span><span class="s4">0.99</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'TVaR_99'</span><span class="s1">: self.TVaR(a_loss_vector</span><span class="s0">,</span><span class="s4">0.99</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'VaR_995'</span><span class="s1">: self.VaR(a_loss_vector</span><span class="s0">,</span><span class="s4">0.995</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'Premium'</span><span class="s1">: self.premium(a_loss_vector</span><span class="s0">, </span><span class="s4">0.99</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'Pattern'</span><span class="s1">: self.reinsurer_pattern(a_loss_array)</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">contract_result_summary</span>
+
+    <span class="s0">def </span><span class="s1">get_result_summary(self):</span>
+        <span class="s2"># Store the results for each contract type in a dictionary of dictionary and convert it in a DataFrame</span>
+        <span class="s1">summary ={</span>
+            <span class="s3">'10m xs 5m'</span><span class="s1">: self.get_contract_results(self.xs_loss)</span><span class="s0">,</span>
+            <span class="s3">'10m xs 5m, AAD 2m'</span><span class="s1">: self.get_contract_results(self.aad_loss)</span><span class="s0">,</span>
+            <span class="s3">'10m xs 5m, AAL 12m'</span><span class="s1">: self.get_contract_results(self.aal_loss)</span><span class="s0">,</span>
+            <span class="s3">'10m xs 5m, AAD 2m, AAL 12m'</span><span class="s1">: self.get_contract_results(self.aad_aal_loss)</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">pd.DataFrame(summary)</span>
+
+    <span class="s0">def </span><span class="s1">the_basic_challenge(self):</span>
+        <span class="s2"># Return the results for the first question about the basic challenge as a Serie</span>
+        <span class="s0">return </span><span class="s1">self.get_result_summary().loc[[</span><span class="s3">'Average Loss'</span><span class="s0">,</span><span class="s3">'VaR_99'</span><span class="s1">]</span><span class="s0">,</span><span class="s3">'10m xs 5m'</span><span class="s1">]</span>
+
+    <span class="s0">def </span><span class="s1">introducing_AAD_and_AAL(self):</span>
+        <span class="s2"># Return the results for the second question about the AAD and AAL thresholds as a DataFrame</span>
+        <span class="s0">return </span><span class="s1">self.get_result_summary().loc[[</span><span class="s3">'Average Loss'</span><span class="s0">,</span><span class="s3">'VaR_99'</span><span class="s1">]]</span>
+
+    <span class="s0">def </span><span class="s1">applying_a_simple_pricing_model(self):</span>
+        <span class="s2"># Return the results for the pricing model as a DataFrame</span>
+        <span class="s0">return </span><span class="s1">self.get_result_summary().loc[[</span><span class="s3">'Premium'</span><span class="s1">]]</span>
+
+    <span class="s0">def </span><span class="s1">patterns(self):</span>
+        <span class="s2"># Return the results of the reinsurer pattern in a DataFrame</span>
+        <span class="s0">return </span><span class="s1">self.get_result_summary().loc[[</span><span class="s3">'Pattern'</span><span class="s1">]].T</span>
+
+
+<span class="s0">class </span><span class="s1">Portfolio(XlContract):</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">input_list):</span>
+        <span class="s2"># Store the inputs in an attribute the input_list is a list of dictionary</span>
+        <span class="s1">self.input_list = input_list</span>
+        <span class="s2"># Define a dictionary with all the line of business objects</span>
+        <span class="s1">self.lob = self.get_all_lob()</span>
+
+    <span class="s0">def </span><span class="s1">get_all_lob(self):</span>
+        <span class="s2"># Build a dictionary of with Ligne of business name and Xl_contract object instantiated</span>
+        <span class="s2"># We loop over input_list to generate all lignes of business</span>
+        <span class="s1">lob = {}</span>
+        <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">self.input_list:</span>
+            <span class="s1">lob[i[</span><span class="s3">'LOB'</span><span class="s1">]] = XlContract(i)</span>
+        <span class="s0">return </span><span class="s1">lob</span>
+
+    <span class="s0">def </span><span class="s1">get_portfolio_underwriting_risk(self</span><span class="s0">, </span><span class="s1">a_loss_kind):</span>
+        <span class="s2"># Compute the Underwriting risk random variable for the all portfolio</span>
+        <span class="s2"># We define this risk as the difference between the losses and the premiums</span>
+        <span class="s2"># The risk is aggregated for all ligne of business</span>
+        <span class="s1">premiums = []</span>
+        <span class="s1">losses = []</span>
+        <span class="s0">for </span><span class="s1">v </span><span class="s0">in </span><span class="s1">self.lob.values():</span>
+            <span class="s1">a_lob_loss = getattr(v</span><span class="s0">, </span><span class="s1">a_loss_kind).sum(axis=</span><span class="s4">1</span><span class="s1">)</span>
+            <span class="s1">premiums.append(v.premium(a_lob_loss</span><span class="s0">, </span><span class="s4">0.99</span><span class="s1">))</span>
+            <span class="s1">losses.append(a_lob_loss)</span>
+        <span class="s0">return </span><span class="s1">sum(losses) - sum(premiums)</span>
+
+    <span class="s0">def </span><span class="s1">get_portfolio_results(self</span><span class="s0">, </span><span class="s1">a_loss_kind):</span>
+        <span class="s2"># Compute the SST and Solvency II risk measure for the underwriting risk at portfolio level</span>
+        <span class="s2"># a_loss_kind refers to a single contract type as define in the exercice</span>
+        <span class="s1">a_loss_vector = self.get_portfolio_underwriting_risk(a_loss_kind)</span>
+        <span class="s1">contract_result_summary = {</span>
+            <span class="s3">'TVaR_99'</span><span class="s1">: self.TVaR(a_loss_vector</span><span class="s0">,</span><span class="s4">0.99</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'VaR_995'</span><span class="s1">: self.VaR(a_loss_vector</span><span class="s0">,</span><span class="s4">0.995</span><span class="s1">)</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">contract_result_summary</span>
+
+    <span class="s0">def </span><span class="s1">get_portfolio_summary(self):</span>
+        <span class="s2"># Store the results for each contract type in a dictionary of dictionary and convert it in a DataFrame</span>
+        <span class="s1">summary = {</span>
+            <span class="s3">'10m xs 5m'</span><span class="s1">: self.get_portfolio_results(</span><span class="s3">'xs_loss'</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'10m xs 5m, AAD 2m'</span><span class="s1">: self.get_portfolio_results(</span><span class="s3">'aad_loss'</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'10m xs 5m, AAL 12m'</span><span class="s1">: self.get_portfolio_results(</span><span class="s3">'aal_loss'</span><span class="s1">)</span><span class="s0">,</span>
+            <span class="s3">'10m xs 5m, AAD 2m, AAL 12m'</span><span class="s1">: self.get_portfolio_results(</span><span class="s3">'aad_aal_loss'</span><span class="s1">)</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">pd.DataFrame(summary)</span></pre>
+</body>
+</html>
