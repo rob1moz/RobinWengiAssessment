@@ -4,7 +4,7 @@ import numpy as np
 # If you want predictable result than set the seed to 0. To generate new random numbers then comment the line below
 np.random.seed(0)
 
-number_of_simulation = 1000
+number_of_simulation = 100000
 
 cost_of_capital = 0.08
 
